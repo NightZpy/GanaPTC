@@ -1,0 +1,145 @@
+#include <oPen.h>
+
+int loginVB(char login[], char pwd[])
+{
+    oPen obj;
+    oPen::sCURL prms;
+    char capt[6], cook[512], uri[512];
+
+    prms.flagPST=-123;
+    prms=obj.curlme("http://venebux.com/login.php?r=", "body.html", 1, prms, -1);
+
+    while(prms.maxCOOK>=0)
+    {
+        if(strstr(prms.recvCookie[prms.maxCOOK], "PHPSESSID\t"))
+        {
+            strcpy(cook, "PHPSESSID=");
+            strncat(cook, obj.corta(strstr(prms.recvCookie[prms.maxCOOK], "PHPSESSID"), 10, strlen(strstr(prms.recvCookie[prms.maxCOOK], "PHPSESSID"))-1), 512);
+        }
+
+    prms.maxCOOK=prms.maxCOOK--;
+    }
+
+
+    strcpy(prms.sendCookie, cook);
+    strncpy(prms.referer, "//http://venebux.com/login.php?r=", 512);
+
+    obj.curlme("http://venebux.com/image.php?", "cap.png", 1, prms, -1);
+
+    cout << "Captcha descargada .. \n[+] cargando preview... " << endl;
+    system("feh -F cap.png");
+
+    cout << "Ingrese contenido de la captcha : ";
+
+    strcpy(prms.postdata, "username=");
+    strncat(prms.postdata, login, 255);
+    strncat(prms.postdata, "&password=", 255);
+    strncat(prms.postdata, pwd, 255);
+    strncat(prms.postdata, "&code=", 255);
+    fgets(capt, 4, stdin);
+    strncat(prms.postdata, capt, 255);
+    prms.flagPST=1;
+
+    prms=obj.curlme("http://venebux.com/login.php?r=", "body.html", 1, prms, -1);
+
+            strncat(cook, "; ", 512);
+            strcpy(uri, "usNick=");
+            strncat(uri, login, 512);
+            strncat(uri, "; usPass=", 512);
+            strncat(uri, pwd, 512);
+            strcat(cook, uri);
+
+    strcpy(uri, "http://venebux.com/");
+
+    if(strstr(prms.string, "URL="))
+    {
+        strncpy(prms.string, strstr(prms.string, "URL="), 512);
+        strncpy(prms.string, obj.corta(prms.string, 4, strlen(prms.string)-5), 512);
+        strncat(uri, prms.string, 512);
+
+        prms=obj.curlme(uri, "body.html", 1, prms, -1);
+
+        strcpy(prms.referer, "http://venebux.com/members.php");
+
+        prms=obj.curlme("http://venebux.com/surf.php", "body.html", 1, prms, -1);
+
+        struct oPen::soPenXML loka=obj.filedump("body.html", 1, "a", "a", 1);
+
+        if(loka.max>0)
+        {
+
+    while(loka.max)
+    {
+
+        if(strstr(loka.var1[loka.max], "view.php"))
+        {
+            if(strlen(strstr(loka.var1[loka.max], "view.php"))!=17)
+            {
+                if(loka.max>0)
+                loka.max--;
+
+                    else
+                    break;
+             }
+
+    strcpy(uri, "http://venebux.com/");
+    strncat(uri, loka.var1[loka.max], 512);
+
+    strcpy(prms.referer, "http://venebux.com/surf.php");
+    strcpy(prms.sendCookie, cook);
+
+    prms=obj.curlme(uri, "body.html", 1, prms, -1);
+
+    strcpy(prms.string, strstr(prms.string, "<input type=\"hidden\" name=\"verify\" value=\""));
+    strcpy(prms.string, obj.corta(obj.RetNumber(prms.string), 0, 4));
+
+    cout << "[+] Visitando... Por favor espere...  " << prms.string << endl;
+    sleep(obj.random_enum(40, 70, 0));
+    cout << "[+] DeadLine.! ^^" << endl;
+
+    strcpy(loka.var1[loka.max], obj.corta(loka.var1[loka.max], 9, strlen(loka.var1[loka.max])-1));
+
+    strcpy(uri, "http://venebux.com/success.php?");
+    strncat(uri, loka.var1[loka.max], 512);
+    strncat(uri, "&verify=", 512);
+    strncat(uri, prms.string, 512);
+
+    prms.flagPST=1;
+
+    obj.curlme(uri, "body.html", 1, prms, -1);
+    prms.flagPST=-1;
+
+}
+    loka.max--;
+    }
+        }
+    }
+}
+
+int main()
+{
+    oPen obj;
+
+    MYSQL_RES *resp;
+    MYSQL_ROW row;
+
+    while(1)
+    {
+
+    resp=obj.mysql(NULL, "ganah", "usrganah", "57c2887bf3f2afce595192fcadf09d72127b496b1d4efd351c2f0f78635c", "select user,pwd from account order by rand()", 9000, 1);
+
+        while(row=mysql_fetch_row(resp))
+        {
+            cout << "Please wait ;)" << endl;
+
+            sleep(obj.random_enum(6200, 1000, 0));
+
+            loginVB(row[0], row[1]);
+            //loginVB("anservic", "123456789");
+
+            cout << "Esperando al proximo login" << endl;
+            sleep(obj.random_enum(6200, 10000, 0));
+        }
+
+    }
+}
